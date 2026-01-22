@@ -55,6 +55,7 @@
 
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
 param(
     [int]$VMCount = 1,
     [string]$VMNamePrefix = "hvvm",

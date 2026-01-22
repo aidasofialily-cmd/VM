@@ -420,7 +420,7 @@ function Rebuild-VMMenu {
     }
 
     $vmlist = @()
-    if ($global:latestInfo) { $vmlist = $global:latestInfo.VMs } else { $vmlist = Get-VMInfo.VMs }
+    if ($global:latestInfo) { $vmlist = $global:latestInfo.VMs } else { $vmlist = (Get-VMInfo).VMs }
 
     if ($vmlist.Count -eq 0) {
         $miVMs.DropDownItems.Add("No VMs found (filter: $VMNameFilter)") | Out-Null
