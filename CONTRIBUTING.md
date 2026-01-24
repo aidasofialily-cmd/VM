@@ -1,13 +1,13 @@
 # Contributing to VM
 
-Welcome, and thank you for your interest in contributing to VS Code!
+Welcome, and thank you for your interest in contributing to VM!
 
 There are several ways in which you can contribute, beyond writing code. The goal of this document is to provide a high-level overview of how you can get involved.
 
 ## Asking Questions
 
 
-Have a question? Instead of opening an issue, please ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/visual-studio-code) using the tag `visual-studio-code`.
+Have a question? Instead of opening an issue, please ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/hyper-v) using the tag `hyper-v`.
 
 The active community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.
 
@@ -15,17 +15,17 @@ The active community will be eager to assist you. Your well-worded question will
 
 Your comments and feedback are welcome, and the development team is available via a handful of different channels.
 
-See the [Feedback Channels](https://github.com/microsoft/vscode/wiki/Feedback-Channels) wiki page for details on how to share your thoughts.
+See the project wiki for details on how to share your thoughts.
 
 ## Reporting Issues
 
-Have you identified a reproducible problem in VS Code? Do you have a feature request? We want to hear about it! Here's how you can report your issue as effectively as possible.
+Have you identified a reproducible problem in VM? Do you have a feature request? We want to hear about it! Here's how you can report your issue as effectively as possible.
 
 ### Identify Where to Report
 
-The VS Code project is distributed across multiple repositories. Try to file the issue against the correct repository. Check the list of [Related Projects](https://github.com/microsoft/vscode/wiki/Related-Projects) if you aren't sure which repo is correct.
+The VM project is distributed across multiple repositories. Try to file the issue against the correct repository. Check the project documentation if you aren't sure which repo is correct.
 
-Can you recreate the issue even after [disabling all extensions](https://code.visualstudio.com/docs/editor/extension-gallery#_disable-an-extension)? If you find the issue is caused by an extension you have installed, please file an issue on the extension's repo directly.
+Can you recreate the issue even after disabling any custom extensions or tools? If you find the issue is caused by an extension you have installed, please file an issue on the extension's repo directly.
 
 ### Look For an Existing Issue
 
@@ -52,19 +52,17 @@ The built-in tool for reporting an issue, which you can access by using `Report 
 
 Please include the following with each issue:
 
-* Version of VS Code
+* Version of VM
 * Your operating system
-* List of extensions that you have installed
 * Reproducible steps (1... 2... 3...) that cause the issue
 * What you expected to see, versus what you actually saw
 * Images, animations, or a link to a video showing the issue occurring
 * A code snippet that demonstrates the issue or a link to a code repository the developers can easily pull down to recreate the issue locally
   * **Note:** Because the developers need to copy and paste the code snippet, including a code snippet as a media file (i.e. .gif) is not sufficient.
-* Errors from the Dev Tools Console (open from the menu: Help > Toggle Developer Tools)
 
 ### Creating Pull Requests
 
-* Please refer to the article on [creating pull requests](https://github.com/microsoft/vscode/wiki/How-to-Contribute#pull-requests) and contributing to this project.
+* Please refer to the project documentation on creating pull requests and contributing to this project.
 
 ### Final Checklist
 
@@ -86,13 +84,13 @@ We use GitHub Actions to help us manage issues. These Actions and their descript
 
 * Automatically close any issue marked `info-needed` if there has been no response in the past 7 days.
 * Automatically lock issues 45 days after they are closed.
-* Automatically implement the VS Code [feature request pipeline](https://github.com/microsoft/vscode/wiki/Issues-Triaging#managing-feature-requests).
+* Automatically implement the feature request pipeline.
 
 If you believe the bot got something wrong, please open a new issue and let us know.
 
 ## Contributing Fixes
 
-If you are interested in writing code to fix issues, please see [How to Contribute](https://github.com/microsoft/vscode/wiki/How-to-Contribute) in the wiki.
+If you are interested in writing code to fix issues, please see the project documentation.
 
 ## Thank You
 

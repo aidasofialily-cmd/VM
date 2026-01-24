@@ -173,7 +173,7 @@ function Take-VMScreenshot([string]$VMName) {
             Show-ErrorBox "Failed to capture screenshot. Ensure the VM is running or has been started at least once."
         }
     } catch {
-        Show-ErrorBox "Screenshot failed for $VMName: $($_.Exception.Message)"
+        Show-ErrorBox "Screenshot failed for ${VMName}: $($_.Exception.Message)"
     }
 }
 
