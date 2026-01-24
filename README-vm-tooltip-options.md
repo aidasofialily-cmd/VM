@@ -8,7 +8,9 @@ What it does
 - Left-click shows a balloon with VM details (state, CPU, RAM, IP).
 - Right-click menu includes:
   - Refresh
-  - VMs -> per-VM submenu with: Start, Stop, Restart, Save, Pause, Resume, Connect
+  - Show VM Dashboard (Screens) -> Opens a GUI window with VM status and control buttons
+  - VMs -> per-VM submenu with: Start, Stop, Restart, Save, Pause, Resume, Take Screenshot, Connect
+  - Open Screens Folder -> Opens the folder where screenshots are saved
   - Open Hyper‑V Manager
   - Install Run at Logon (adds an HKCU Run entry for the script)
   - Uninstall Run at Logon
@@ -48,12 +50,12 @@ Possible customizations I can add
 - Add logging of actions and status changes.
 - Create a Windows Service + per-user agent model so the tray app doesn't need to run in a full user session.
 - Use Scheduled Task (with highest privileges) for run-at-logon if you want it system-wide.
+- Add actual thumbnail images to the Dashboard (requires periodic background refresh of thumbnails).
 
 If you'd like, I can:
 - Add an installer that places the script in Program Files and creates a per-user Run key or scheduled task.
 - Add an option to automatically elevate when a VM action is performed (requires manifest / separate executable wrapper).
-- Add an optional small GUI window that lists VMs with inline control buttons (instead of submenus).
 
-Tell me which customization you'd like next (installer, auto-elevate, filters, logging, GUI list), and I'll update the script.
+Tell me which customization you'd like next (installer, auto-elevate, filters, logging), and I'll update the script.
 ```
 ```

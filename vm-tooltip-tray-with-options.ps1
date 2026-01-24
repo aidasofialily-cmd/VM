@@ -142,6 +142,103 @@ function Build-BalloonText {
     return ($lines -join [Environment]::NewLine)
 }
 
+function Take-VMScreenshot([string]$VMName) {
+    try {
+        if (-not (Is-Admin)) {
+            Show-ErrorBox "Taking screenshots requires Administrator privileges."
+            return
+        }
+
+        # Ensure screens directory exists
+        $screenDir = Join-Path (Split-Path $MyInvocation.MyCommand.Path) "screens"
+        if (-not (Test-Path $screenDir)) { New-Item -ItemType Directory -Path $screenDir | Out-Null }
+
+        # Use CIM to get the thumbnail image (GIF format)
+        $vm = Get-CimInstance -Namespace root\virtualization\v2 -ClassName Msvm_ComputerSystem -Filter "ElementName='$VMName'" -ErrorAction Stop
+        $mgmt = Get-CimInstance -Namespace root\virtualization\v2 -ClassName Msvm_VirtualSystemManagementService -ErrorAction Stop
+
+        $result = Invoke-CimMethod -InputObject $mgmt -MethodName GetVirtualSystemThumbnailImage -Arguments @{
+            TargetSystem = $vm.CimInstancePath
+            WidthPixels = 1024
+            HeightPixels = 768
+        }
+
+        if ($result.ReturnValue -eq 0 -and $result.ImageData) {
+            $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+            $fileName = "$($VMName)_$($timestamp).gif"
+            $filePath = Join-Path $screenDir $fileName
+            [System.IO.File]::WriteAllBytes($filePath, $result.ImageData)
+            Show-InfoBox "Screenshot saved to $filePath"
+        } else {
+            Show-ErrorBox "Failed to capture screenshot. Ensure the VM is running or has been started at least once."
+        }
+    } catch {
+        Show-ErrorBox "Screenshot failed for $VMName: $($_.Exception.Message)"
+    }
+}
+
+function Show-VMDashboard {
+    $dashForm = New-Object System.Windows.Forms.Form
+    $dashForm.Text = "VM Dashboard - Screens"
+    $dashForm.Size = New-Object System.Drawing.Size(600, 450)
+    $dashForm.StartPosition = "CenterScreen"
+
+    $flow = New-Object System.Windows.Forms.FlowLayoutPanel
+    $flow.Dock = "Fill"
+    $flow.AutoScroll = $true
+    $dashForm.Controls.Add($flow)
+
+    $updateUI = {
+        $flow.Controls.Clear()
+        $global:latestInfo = Get-VMInfo
+        $vmlist = $global:latestInfo.VMs
+
+        foreach ($vm in $vmlist) {
+            $vName = $vm.Name
+            $vState = $vm.State
+
+            $panel = New-Object System.Windows.Forms.GroupBox
+            $panel.Text = $vName
+            $panel.Size = New-Object System.Drawing.Size(560, 90)
+
+            $lblStatus = New-Object System.Windows.Forms.Label
+            $lblStatus.Text = "Status: $vState"
+            $lblStatus.Location = New-Object System.Drawing.Point(10, 25)
+            $lblStatus.AutoSize = $true
+            $panel.Controls.Add($lblStatus)
+
+            $btnStart = New-Object System.Windows.Forms.Button
+            $btnStart.Text = "Start"
+            $btnStart.Location = New-Object System.Drawing.Point(10, 50)
+            $btnStart.add_Click({ Perform-VMAction -Action "Start" -VMName $vName; &$updateUI }.GetNewClosure())
+            $panel.Controls.Add($btnStart)
+
+            $btnStop = New-Object System.Windows.Forms.Button
+            $btnStop.Text = "Stop"
+            $btnStop.Location = New-Object System.Drawing.Point(90, 50)
+            $btnStop.add_Click({ Perform-VMAction -Action "Stop" -VMName $vName; &$updateUI }.GetNewClosure())
+            $panel.Controls.Add($btnStop)
+
+            $btnSnap = New-Object System.Windows.Forms.Button
+            $btnSnap.Text = "Screenshot"
+            $btnSnap.Location = New-Object System.Drawing.Point(170, 50)
+            $btnSnap.add_Click({ Take-VMScreenshot -VMName $vName }.GetNewClosure())
+            $panel.Controls.Add($btnSnap)
+
+            $btnConnect = New-Object System.Windows.Forms.Button
+            $btnConnect.Text = "Connect"
+            $btnConnect.Location = New-Object System.Drawing.Point(250, 50)
+            $btnConnect.add_Click({ Perform-VMAction -Action "Connect" -VMName $vName }.GetNewClosure())
+            $panel.Controls.Add($btnConnect)
+
+            $flow.Controls.Add($panel)
+        }
+    }
+
+    &$updateUI
+    $dashForm.ShowDialog() | Out-Null
+}
+
 function Perform-VMAction {
     param(
         [Parameter(Mandatory=$true)][ValidateSet("Start","Stop","Restart","Save","Pause","Resume","Connect")][string]$Action,
@@ -249,14 +346,18 @@ $notify.Text = "Hyper-V VMs"
 $menu = New-Object System.Windows.Forms.ContextMenuStrip
 
 $miRefresh = New-Object System.Windows.Forms.ToolStripMenuItem "Refresh"
+$miDashboard = New-Object System.Windows.Forms.ToolStripMenuItem "Show VM Dashboard (Screens)"
 $miVMs = New-Object System.Windows.Forms.ToolStripMenuItem "VMs"
+$miScreens = New-Object System.Windows.Forms.ToolStripMenuItem "Open Screens Folder"
 $miOpen = New-Object System.Windows.Forms.ToolStripMenuItem "Open Hyper-V Manager"
 $miInstallRun = New-Object System.Windows.Forms.ToolStripMenuItem "Install Run at Logon"
 $miUninstallRun = New-Object System.Windows.Forms.ToolStripMenuItem "Uninstall Run at Logon"
 $miExit = New-Object System.Windows.Forms.ToolStripMenuItem "Exit"
 
 $menu.Items.Add($miRefresh) | Out-Null
+$menu.Items.Add($miDashboard) | Out-Null
 $menu.Items.Add($miVMs) | Out-Null
+$menu.Items.Add($miScreens) | Out-Null
 $menu.Items.Add($miOpen) | Out-Null
 $menu.Items.Add("-") | Out-Null
 $menu.Items.Add($miInstallRun) | Out-Null
@@ -273,6 +374,16 @@ $miRefresh.add_Click({
         $notify.Text = Build-SummaryText $global:latestInfo
         Rebuild-VMMenu
     } catch { }
+})
+
+$miDashboard.add_Click({
+    Show-VMDashboard
+})
+
+$miScreens.add_Click({
+    $screenDir = Join-Path (Split-Path $MyInvocation.MyCommand.Path) "screens"
+    if (-not (Test-Path $screenDir)) { New-Item -ItemType Directory -Path $screenDir | Out-Null }
+    Start-Process "explorer.exe" -ArgumentList "`"$screenDir`""
 })
 
 $miOpen.add_Click({
@@ -309,7 +420,7 @@ function Rebuild-VMMenu {
     }
 
     $vmlist = @()
-    if ($global:latestInfo) { $vmlist = $global:latestInfo.VMs } else { $vmlist = Get-VMInfo.VMs }
+    if ($global:latestInfo) { $vmlist = $global:latestInfo.VMs } else { $vmlist = (Get-VMInfo).VMs }
 
     if ($vmlist.Count -eq 0) {
         $miVMs.DropDownItems.Add("No VMs found (filter: $VMNameFilter)") | Out-Null
@@ -327,16 +438,18 @@ function Rebuild-VMMenu {
         $miSave = New-Object System.Windows.Forms.ToolStripMenuItem "Save"
         $miPause = New-Object System.Windows.Forms.ToolStripMenuItem "Pause"
         $miResume = New-Object System.Windows.Forms.ToolStripMenuItem "Resume"
+        $miScreenshot = New-Object System.Windows.Forms.ToolStripMenuItem "Take Screenshot"
         $miConnect = New-Object System.Windows.Forms.ToolStripMenuItem "Connect"
 
-        # Hook up event handlers capturing $vmName
-        $miStart.add_Click({ Perform-VMAction -Action "Start" -VMName $vmName })
-        $miStop.add_Click({ Perform-VMAction -Action "Stop" -VMName $vmName })
-        $miRestart.add_Click({ Perform-VMAction -Action "Restart" -VMName $vmName })
-        $miSave.add_Click({ Perform-VMAction -Action "Save" -VMName $vmName })
-        $miPause.add_Click({ Perform-VMAction -Action "Pause" -VMName $vmName })
-        $miResume.add_Click({ Perform-VMAction -Action "Resume" -VMName $vmName })
-        $miConnect.add_Click({ Perform-VMAction -Action "Connect" -VMName $vmName })
+        # Hook up event handlers capturing $vmName correctly using GetNewClosure
+        $miStart.add_Click({ Perform-VMAction -Action "Start" -VMName $vmName }.GetNewClosure())
+        $miStop.add_Click({ Perform-VMAction -Action "Stop" -VMName $vmName }.GetNewClosure())
+        $miRestart.add_Click({ Perform-VMAction -Action "Restart" -VMName $vmName }.GetNewClosure())
+        $miSave.add_Click({ Perform-VMAction -Action "Save" -VMName $vmName }.GetNewClosure())
+        $miPause.add_Click({ Perform-VMAction -Action "Pause" -VMName $vmName }.GetNewClosure())
+        $miResume.add_Click({ Perform-VMAction -Action "Resume" -VMName $vmName }.GetNewClosure())
+        $miScreenshot.add_Click({ Take-VMScreenshot -VMName $vmName }.GetNewClosure())
+        $miConnect.add_Click({ Perform-VMAction -Action "Connect" -VMName $vmName }.GetNewClosure())
 
         # Add items to vmItem
         $vmItem.DropDownItems.Add($miStart) | Out-Null
@@ -346,6 +459,7 @@ function Rebuild-VMMenu {
         $vmItem.DropDownItems.Add($miPause) | Out-Null
         $vmItem.DropDownItems.Add($miResume) | Out-Null
         $vmItem.DropDownItems.Add("-") | Out-Null
+        $vmItem.DropDownItems.Add($miScreenshot) | Out-Null
         $vmItem.DropDownItems.Add($miConnect) | Out-Null
 
         $miVMs.DropDownItems.Add($vmItem) | Out-Null
