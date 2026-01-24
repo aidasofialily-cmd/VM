@@ -79,7 +79,7 @@ try {
     } -ArgumentList $DestinationPath -ErrorAction Stop
 
     # Copy items (supports folders via -Recurse)
-    Write-Host "Copying $SourcePath -> $VMName:$DestinationPath ..."
+    Write-Host "Copying $SourcePath -> ${VMName}:${DestinationPath} ..."
     Copy-Item -ToSession $sess -Path $SourcePath -Destination $DestinationPath -Recurse -Force -ErrorAction Stop
 
     Write-Host "Copy completed successfully."

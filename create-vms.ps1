@@ -200,7 +200,7 @@ for ($i = 1; $i -le $VMCount; $i++) {
             $cred = New-Object System.Management.Automation.PSCredential("Administrator", $secPass)
             # Wait for VM to boot enough for PowerShell Direct to accept connections (this may require adjustments)
             Start-Sleep -Seconds 20
-            Invoke-Command -VMName $vmName -ScriptBlock {
+            Invoke-Command -VMName $vmName -Credential $cred -ScriptBlock {
                 param($pwd)
                 net user Administrator $pwd
             } -ArgumentList $AdminPassword -ErrorAction Stop
